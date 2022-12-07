@@ -113,8 +113,8 @@ output_player_game_plot <- function(input_df, input_season, input_weeks, input_p
       show.legend = FALSE,
       na.rm = TRUE
     ) +
-    ggplot2::geom_text(ggplot2::aes(label = paste0("EPA/P: ", round(.data$EPAP,2))), size = 2.5, fontface = "bold", nudge_x = .05, nudge_y = -max_y/8, color = "#6c0000") +
-    ggplot2::geom_text(ggplot2::aes(label = paste0("SR: ", round(.data$SR,2))), size = 2.5, fontface = "bold", nudge_x = .18, nudge_y = -max_y/12, color = "#6c0000") +
+    ggplot2::geom_text(ggplot2::aes(label = paste0("EPA/P: ", round(.data$EPAP,2))), size = 2.5, fontface = "bold", nudge_x = .07, nudge_y = -max_y/8, color = "#6c0000") +
+    ggplot2::geom_text(ggplot2::aes(label = paste0("SR: ", round(.data$SR,2))), size = 2.5, fontface = "bold", nudge_x = .19, nudge_y = -max_y/12, color = "#6c0000") +
     ggplot2::geom_hline(yintercept = input_threshold,
                         color = "red",
                         linetype = "dashed") +
