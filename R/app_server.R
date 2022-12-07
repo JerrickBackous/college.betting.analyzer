@@ -64,7 +64,7 @@ observe({
     updateSelectizeInput(
       session,
       "player_input_game_plot",
-      choices = player_input(),
+      choices = player_input()$athlete_name,
       selected = NULL,
       server = TRUE
     )
@@ -76,7 +76,8 @@ observe({
     shinyWidgets::updatePickerInput(
       session,
       "metric_player_game_plot",
-      choices = colnames(betting_player_stats_raw()[82:99]),
+      choices = colnames(betting_player_stats_raw() |>
+                           dplyr::select(.data$`Fantasy Score`:.data$`Kick Ret TDs`)),
       selected = NULL
     )
   })
