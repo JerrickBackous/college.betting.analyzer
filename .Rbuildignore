@@ -1,3 +1,5 @@
+^renv$
+^renv\.lock$
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^data-raw$
@@ -6,3 +8,7 @@ dev_history.R
 $run_dev.*
 ^LICENSE\.md$
 ^README\.Rmd$
+^app\.R$
+^rsconnect$
+^Dockerfile$
+^\.dockerignore$

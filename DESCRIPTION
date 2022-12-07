@@ -5,17 +5,41 @@ Authors@R:
     person("Jerrick", "Backous", , "jerrick.backous20@gmail.com", role = c("cre", "aut"))
 Description: Tools to help with college betting.
 License: MIT + file LICENSE
+URL: https://github.com/JerrickBackous/college.betting.analyzer
+BugReports: 
+    https://github.com/JerrickBackous/college.betting.analyzer/issues
 Imports: 
+    aws.s3,
+    bslib,
+    cfbplotR,
     config (>= 0.3.1),
+    cowplot,
+    dbplyr,
+    dplyr,
+    geomtextpath,
+    ggiraph,
+    ggplot2,
+    ggrepel,
+    glue,
     golem (>= 0.3.5),
-    shiny (>= 1.7.3)
+    htmltools,
+    magick,
+    pool,
+    reactable,
+    rlang,
+    RPostgres,
+    scales,
+    sever,
+    shiny (>= 1.7.3),
+    shinyjs,
+    shinyWidgets,
+    stats,
+    utils,
+    waiter
 Suggests: 
     spelling,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Encoding: UTF-8
 Language: en-US
-LazyData: true
 RoxygenNote: 7.2.1
-URL: https://github.com/JerrickBackous/college.betting.analyzer
-BugReports: https://github.com/JerrickBackous/college.betting.analyzer/issues
