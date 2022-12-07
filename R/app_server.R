@@ -65,7 +65,8 @@ observe({
       session,
       "player_input_game_plot",
       choices = player_input(),
-      selected = "Jacob Cowing"
+      selected = NULL,
+      server = TRUE
     )
   })
 

@@ -103,7 +103,7 @@ app_ui <- function(request) {
                   width = 12,
                   numericInput("threshold_player_game_plot",
                                "Input Prop Value",
-                               value = 0,
+                               value = NULL,
                                min = -50,
                                max = 500,
                                step = .5
