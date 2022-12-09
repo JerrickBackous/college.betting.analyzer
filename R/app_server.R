@@ -25,6 +25,12 @@ app_server <- function(input, output, session) {
     betting_player_stats_raw <- aws.s3::s3readRDS(object = "app_data/betting_game_stats.rds", bucket = c2cbucket, region = "")
   })
 
+  future_games <- reactive({
+    c2cbucket <- aws.s3::get_bucket(bucket = "campus2canton", region = "")
+
+    betting_player_stats_raw <- aws.s3::s3readRDS(object = "app_data/prop_future_games.rds", bucket = c2cbucket, region = "")
+  })
+
   filter_seasons <- reactive({
     betting_player_stats_raw() |>
       dplyr::select(.data$season) |>
@@ -98,6 +104,7 @@ observe({
     req(input$player_input_game_plot, input$threshold_player_game_plot)
       ggiraph::girafe(
         ggobj = output_player_game_plot(betting_player_stats_raw(),
+                                        future_games(),
                                         input$season_player_game_plot,
                                         input$week_player_game_plot,
                                         input$player_input_game_plot,

@@ -1,6 +1,7 @@
 #' Player metric plot
 #'
 #' @param input_df data frame
+#' @param input_next_game data frame with future games
 #' @param input_season players to filter
 #' @param input_weeks positions to filter
 #' @param input_player metrics to filter
@@ -19,24 +20,13 @@
 #' @importFrom geomtextpath geom_textsmooth
 #' @importFrom stats lm
 #' @export
-output_player_game_plot <- function(input_df, input_season, input_weeks, input_player, input_metric, input_threshold) {
+output_player_game_plot <- function(input_df, input_next_game, input_season, input_weeks, input_player, input_metric, input_threshold) {
+
   player_plot_data <- input_df |>
     dplyr::filter(.data$season %in% input_season,
                   .data$week %in% c(input_weeks[1]:input_weeks[2]),
                   .data$athlete_name %in% input_player
     ) |>
-    dplyr::select(.data$week,
-                  .data$athlete_id,
-                  .data$athlete_name,
-                  .data$team,
-                  .data$opponent,
-                  input_metric,
-                  .data$opponent_def_ppa,
-                  .data$opponent_def_success_rate,
-                  .data$opponent_def_rushing_plays_ppa,
-                  .data$opponent_def_rushing_plays_success_rate,
-                  .data$opponent_def_passing_plays_ppa,
-                  .data$opponent_def_passing_plays_success_rate) |>
     dplyr::mutate(color = dplyr::case_when(input_metric >= input_threshold ~ "green",
                                     input_metric < input_threshold ~ "red"),
                   EPAP = dplyr::case_when(
@@ -78,11 +68,89 @@ output_player_game_plot <- function(input_df, input_season, input_weeks, input_p
                                         "Fumbles Lost",
                                         "Punt Ret TDs",
                                         "Kick Ret TDs") ~ .data$opponent_def_success_rate)) |>
-
+    dplyr::select(.data$week,
+                  .data$athlete_id,
+                  .data$athlete_name,
+                  .data$team,
+                  .data$opponent,
+                  .data$opponent_def_ppa,
+                  .data$opponent_def_success_rate,
+                  .data$opponent_def_rushing_plays_ppa,
+                  .data$opponent_def_rushing_plays_success_rate,
+                  .data$opponent_def_passing_plays_ppa,
+                  .data$opponent_def_passing_plays_success_rate,
+                  .data$color,
+                  .data$EPAP,
+                  .data$SR,
+                  input_metric) |>
     dplyr::distinct() |>
     dplyr::tibble()
 
-  max_y <- max(player_plot_data |> dplyr::select(input_metric))
+  next_player_game <- input_next_game |>
+    dplyr::arrange(.data$week) |>
+    dplyr::filter(.data$season %in% input_season,
+                  .data$team %in% player_plot_data$team[1]) |>
+    dplyr::select(.data$week,
+                  .data$team,
+                  .data$opponent,
+                  .data$opponent_def_ppa,
+                  .data$opponent_def_success_rate,
+                  .data$opponent_def_rushing_plays_ppa,
+                  .data$opponent_def_rushing_plays_success_rate,
+                  .data$opponent_def_passing_plays_ppa,
+                  .data$opponent_def_passing_plays_success_rate) |>
+    dplyr::mutate(color = "grey",
+                  EPAP = dplyr::case_when(
+                    input_metric %in% c("Pass Completions",
+                                        "Pass Attempts",
+                                        "Pass Yards",
+                                        "Pass TDs",
+                                        "Pass Int",
+                                        "Receptions",
+                                        "Rec Yards",
+                                        "Rec TDs") ~ .data$opponent_def_passing_plays_ppa,
+                    input_metric %in% c("Rush Carries",
+                                        "Rush Yards",
+                                        "Rush TDs") ~ .data$opponent_def_rushing_plays_ppa,
+                    input_metric %in% c("Fantasy Score",
+                                        "Pass & Rush Yards",
+                                        "Pass & Rush & Rec TDs",
+                                        "Rush & Rec Yards",
+                                        "Fumbles Lost",
+                                        "Punt Ret TDs",
+                                        "Kick Ret TDs") ~ .data$opponent_def_ppa
+                  ),
+                  SR = dplyr::case_when(
+                    input_metric %in% c("Pass Completions",
+                                        "Pass Attempts",
+                                        "Pass Yards",
+                                        "Pass TDs",
+                                        "Pass Int",
+                                        "Receptions",
+                                        "Rec Yards",
+                                        "Rec TDs") ~ .data$opponent_def_passing_plays_success_rate,
+                    input_metric %in% c("Rush Carries",
+                                        "Rush Yards",
+                                        "Rush TDs") ~ .data$opponent_def_rushing_plays_success_rate,
+                    input_metric %in% c("Fantasy Score",
+                                        "Pass & Rush Yards",
+                                        "Pass & Rush & Rec TDs",
+                                        "Rush & Rec Yards",
+                                        "Fumbles Lost",
+                                        "Punt Ret TDs",
+                                        "Kick Ret TDs") ~ .data$opponent_def_success_rate))
+
+  player_plot_data <- player_plot_data |>
+    dplyr::bind_rows(next_player_game[1,]) |>
+    dplyr::arrange(dplyr::desc(week))
+
+  player_plot_data$athlete_id[1] <- dplyr::last(player_plot_data$athlete_id)
+  player_plot_data$athlete_name[1] <- dplyr::last(player_plot_data$athlete_name)
+  player_plot_data$athlete_name[1] <- dplyr::last(player_plot_data$athlete_name)
+  player_plot_data[length(colnames(player_plot_data))][1,] <- 0
+
+  max_y <- max(player_plot_data |> dplyr::select(input_metric), input_threshold, na.rm = TRUE)
+  count_x <- length(player_plot_data$week)
 
   type_epap_sr <- dplyr::case_when(
     input_metric %in% c("Pass Completions",
@@ -110,11 +178,10 @@ output_player_game_plot <- function(input_df, input_season, input_weeks, input_p
     ggplot2::geom_col(
       ggplot2::aes(group = .data$color,
                    fill = get(input_metric) >= input_threshold),
-      show.legend = FALSE,
-      na.rm = TRUE
+      show.legend = FALSE
     ) +
-    ggplot2::geom_text(ggplot2::aes(label = paste0("EPA/P: ", round(.data$EPAP,2))), size = 2.5, fontface = "bold", nudge_x = .07, nudge_y = -max_y/8, color = "#6c0000") +
-    ggplot2::geom_text(ggplot2::aes(label = paste0("SR: ", round(.data$SR,2))), size = 2.5, fontface = "bold", nudge_x = .19, nudge_y = -max_y/12, color = "#6c0000") +
+    ggplot2::geom_text(ggplot2::aes(label = paste0("EPA/P: ", round(.data$EPAP,2))), fontface = "bold",size = ifelse(count_x >= 6, 30/count_x, 5),  nudge_y = ifelse(count_x >= 8, -max_y/8, -max_y/7), color = "#6c0000") +
+    ggplot2::geom_text(ggplot2::aes(label = paste0("SR: ", round(.data$SR,2))), fontface = "bold",size = ifelse(count_x >= 6, 30/count_x, 5),  nudge_y = ifelse(count_x >= 8, -max_y/12, -max_y/11), color = "#6c0000") +
     ggplot2::geom_hline(yintercept = input_threshold,
                         color = "red",
                         linetype = "dashed") +
