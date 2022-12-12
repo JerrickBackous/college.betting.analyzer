@@ -120,16 +120,22 @@ observe({
       )
     })
 
-  # #### Download the Team Plot ####
-  # output$player_game_plot_download <- downloadHandler(
-  #   filename = function() {
-  #     paste0(glue::glue("player_game_stats"), ".png")
-  #   },
-  #   # content is a function with argument file. content writes the plot to the device
-  #   content = function(file) {
-  #     ggplot2::ggsave(file, plot = download_team_proe_plot(pool, input$season_team_proe_graph, input$week_team_proe_graph, input$down_team_proe_graph, input$wp_team_proe_graph, input$conference_team_proe_graph, input$team_proe_graph, input$average_team_proe_graph), width = 16, height = 9) # for GGPLOT
-  #   }
-  # )
+#### Download the Team Plot ####
+output$player_game_plot_download <- downloadHandler(
+  filename = function() {
+    paste0(glue::glue("player_game_stats"), ".png")
+  },
+  # content is a function with argument file. content writes the plot to the device
+  content = function(file) {
+    ggplot2::ggsave(file, plot = download_player_game_plot(betting_player_stats_raw(),
+                                                         future_games(),
+                                                         input$season_player_game_plot,
+                                                         input$week_player_game_plot,
+                                                         input$player_input_game_plot,
+                                                         input$metric_player_game_plot,
+                                                         input$threshold_player_game_plot), width = 16, height = 9) # for GGPLOT
+  }
+)
 #
 #   filter_neutral_conf <- reactive({
 #     filter_conf_team() |>
