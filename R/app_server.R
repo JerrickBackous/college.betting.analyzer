@@ -61,6 +61,7 @@ observe({
   player_input <- reactive({
     betting_player_stats_raw() |>
       dplyr::filter(.data$season == input$season_player_game_plot) |>
+      dplyr::arrange(dplyr::desc(.data$`Fantasy Score`)) |>
       dplyr::select(.data$athlete_name) |>
       dplyr::distinct(.data$athlete_name)
   })

@@ -59,7 +59,7 @@ app_ui <- function(request) {
                   width = 12,
                   sliderInput(inputId = "season_player_game_plot",
                               label = "Select Season",
-                              min = 2014,
+                              min = 2022,
                               max = most_recent_season(),
                               value = most_recent_season(),
                               step = 1

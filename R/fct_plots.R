@@ -142,7 +142,9 @@ output_player_game_plot <- function(input_df, input_next_game, input_season, inp
 
   player_plot_data <- player_plot_data |>
     dplyr::bind_rows(next_player_game[1,]) |>
-    dplyr::arrange(dplyr::desc(week))
+    dplyr::arrange(dplyr::desc(.data$week)) |>
+    dplyr::filter(!is.na(.data$week),
+                  !is.na(.data$team))
 
   player_plot_data$athlete_id[1] <- dplyr::last(player_plot_data$athlete_id)
   player_plot_data$athlete_name[1] <- dplyr::last(player_plot_data$athlete_name)
@@ -178,16 +180,19 @@ output_player_game_plot <- function(input_df, input_next_game, input_season, inp
     ggplot2::geom_col(
       ggplot2::aes(group = .data$color,
                    fill = get(input_metric) >= input_threshold),
-      show.legend = FALSE
+      show.legend = FALSE,
+      na.rm = TRUE
     ) +
-    ggplot2::geom_text(ggplot2::aes(label = paste0("EPA/P: ", round(.data$EPAP,2))), fontface = "bold",size = ifelse(count_x >= 6, 30/count_x, 5),  nudge_y = ifelse(count_x >= 8, -max_y/8, -max_y/7), color = "#6c0000") +
-    ggplot2::geom_text(ggplot2::aes(label = paste0("SR: ", round(.data$SR,2))), fontface = "bold",size = ifelse(count_x >= 6, 30/count_x, 5),  nudge_y = ifelse(count_x >= 8, -max_y/12, -max_y/11), color = "#6c0000") +
     ggplot2::geom_hline(yintercept = input_threshold,
                         color = "red",
                         linetype = "dashed") +
+    ggplot2::geom_text(ggplot2::aes(label = paste0("EPA/P: ", round(.data$EPAP,2))), fontface = "bold",size = ifelse(count_x >= 6, 30/count_x, 5),  nudge_y = ifelse(count_x >= 8, -max_y/8, -max_y/7), color = "#6c0000", na.rm = TRUE) +
+    ggplot2::geom_text(ggplot2::aes(label = paste0("SR: ", round(.data$SR,2))), fontface = "bold",size = ifelse(count_x >= 6, 30/count_x, 5),  nudge_y = ifelse(count_x >= 8, -max_y/12, -max_y/11), color = "#6c0000", na.rm = TRUE) +
+
     cfbplotR::geom_cfb_logos(ggplot2::aes(team = .data$opponent),
                              width = .05,
-                             alpha = .7) +
+                             alpha = .7,
+                             na.rm = TRUE) +
     ggplot2::theme_minimal() +
     ggplot2::labs(
       x = "Week",
