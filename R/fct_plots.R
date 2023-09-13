@@ -155,7 +155,9 @@ output_player_game_plot <- function(input_df, input_next_game, input_season, inp
   player_plot_data$athlete_id[1] <- dplyr::last(player_plot_data$athlete_id)
   player_plot_data$athlete_name[1] <- dplyr::last(player_plot_data$athlete_name)
   player_plot_data$athlete_name[1] <- dplyr::last(player_plot_data$athlete_name)
-  player_plot_data[length(colnames(player_plot_data))][1,] <- 0
+  if (is.na(player_plot_data[length(colnames(player_plot_data))][1,])) {
+    player_plot_data[length(colnames(player_plot_data))][1,] <- 0
+  }
 
   max_y <- max(player_plot_data |> dplyr::select(input_metric), input_threshold, na.rm = TRUE)
   count_x <- length(player_plot_data$week)
