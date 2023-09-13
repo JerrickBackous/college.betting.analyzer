@@ -27,7 +27,9 @@ output_player_game_plot <- function(input_df, input_next_game, input_season, inp
                   .data$week %in% c(input_weeks[1]:input_weeks[2]),
                   .data$athlete_name %in% input_player
     ) |>
-    dplyr::mutate(color = dplyr::case_when(input_metric >= input_threshold ~ "green",
+    dplyr::mutate(spread = as.numeric(.data$spread),
+                  over_under = as.numeric(.data$over_under),
+                  color = dplyr::case_when(input_metric >= input_threshold ~ "green",
                                     input_metric < input_threshold ~ "red"),
                   EPAP = dplyr::case_when(
                     input_metric %in% c("Pass Completions",
@@ -82,13 +84,15 @@ output_player_game_plot <- function(input_df, input_next_game, input_season, inp
                   .data$color,
                   .data$EPAP,
                   .data$SR,
+                  .data$spread,
+                  .data$over_under,
                   input_metric) |>
     dplyr::distinct() |>
     dplyr::tibble()
 
   next_player_game <- input_next_game |>
     dplyr::arrange(.data$week) |>
-    dplyr::filter(.data$season %in% input_season,
+    dplyr::filter(.data$season %in% input_season &
                   .data$team %in% player_plot_data$team[1]) |>
     dplyr::select(.data$week,
                   .data$team,
@@ -98,7 +102,9 @@ output_player_game_plot <- function(input_df, input_next_game, input_season, inp
                   .data$opponent_def_rushing_plays_ppa,
                   .data$opponent_def_rushing_plays_success_rate,
                   .data$opponent_def_passing_plays_ppa,
-                  .data$opponent_def_passing_plays_success_rate) |>
+                  .data$opponent_def_passing_plays_success_rate,
+                  .data$spread,
+                  .data$over_under) |>
     dplyr::mutate(color = "grey",
                   EPAP = dplyr::case_when(
                     input_metric %in% c("Pass Completions",
@@ -186,8 +192,10 @@ output_player_game_plot <- function(input_df, input_next_game, input_season, inp
     ggplot2::geom_hline(yintercept = input_threshold,
                         color = "red",
                         linetype = "dashed") +
-    ggplot2::geom_text(ggplot2::aes(label = paste0("EPA/P: ", round(.data$EPAP,2))), fontface = "bold",size = ifelse(count_x >= 8, 30/count_x, 4),  nudge_y = ifelse(count_x >= 8, -max_y/8, -max_y/7), color = "#6c0000", na.rm = TRUE) +
-    ggplot2::geom_text(ggplot2::aes(label = paste0("SR: ", round(.data$SR,2))), fontface = "bold",size = ifelse(count_x >= 8, 30/count_x, 4),  nudge_y = ifelse(count_x >= 8, -max_y/12, -max_y/11), color = "#6c0000", na.rm = TRUE) +
+    ggplot2::geom_text(ggplot2::aes(label = paste0("Spread: ", round(.data$spread,1))), fontface = "bold",size = ifelse(count_x >= 8, 30/count_x, 4),  nudge_y = ifelse(count_x >= 8, -max_y/12, -max_y/11), color = "#6c0000", na.rm = TRUE) +
+    ggplot2::geom_text(ggplot2::aes(label = paste0("O/U: ", round(.data$over_under,2))), fontface = "bold",size = ifelse(count_x >= 8, 30/count_x, 4),  nudge_y = ifelse(count_x >= 8, -max_y/8, -max_y/6.6), color = "#6c0000", na.rm = TRUE) +
+    ggplot2::geom_text(ggplot2::aes(label = paste0("SR: ", paste0(round(.data$SR*100,0),"%"))), fontface = "bold",size = ifelse(count_x >= 8, 30/count_x, 4),  nudge_y = ifelse(count_x >= 8, -max_y/6.15, -max_y/4.8), color = "#6c0000", na.rm = TRUE) +
+    ggplot2::geom_text(ggplot2::aes(label = paste0("EPA/P: ", round(.data$EPAP,2))), fontface = "bold",size = ifelse(count_x >= 8, 30/count_x, 4),  nudge_y = ifelse(count_x >= 8, -max_y/5, -max_y/3.75), color = "#6c0000", na.rm = TRUE) +
 
     cfbplotR::geom_cfb_logos(ggplot2::aes(team = .data$opponent),
                              width = .05,
@@ -259,7 +267,9 @@ download_player_game_plot <- function(input_df, input_next_game, input_season, i
                   .data$week %in% c(input_weeks[1]:input_weeks[2]),
                   .data$athlete_name %in% input_player
     ) |>
-    dplyr::mutate(color = dplyr::case_when(input_metric >= input_threshold ~ "green",
+    dplyr::mutate(spread = as.numeric(.data$spread),
+                  over_under = as.numeric(.data$over_under),
+                  color = dplyr::case_when(input_metric >= input_threshold ~ "green",
                                            input_metric < input_threshold ~ "red"),
                   EPAP = dplyr::case_when(
                     input_metric %in% c("Pass Completions",
@@ -314,6 +324,8 @@ download_player_game_plot <- function(input_df, input_next_game, input_season, i
                   .data$color,
                   .data$EPAP,
                   .data$SR,
+                  .data$spread,
+                  .data$over_under,
                   input_metric) |>
     dplyr::distinct() |>
     dplyr::tibble()
@@ -330,7 +342,9 @@ download_player_game_plot <- function(input_df, input_next_game, input_season, i
                   .data$opponent_def_rushing_plays_ppa,
                   .data$opponent_def_rushing_plays_success_rate,
                   .data$opponent_def_passing_plays_ppa,
-                  .data$opponent_def_passing_plays_success_rate) |>
+                  .data$opponent_def_passing_plays_success_rate,
+                  .data$spread,
+                  .data$over_under) |>
     dplyr::mutate(color = "grey",
                   EPAP = dplyr::case_when(
                     input_metric %in% c("Pass Completions",
@@ -418,8 +432,10 @@ download_player_game_plot <- function(input_df, input_next_game, input_season, i
     ggplot2::geom_hline(yintercept = input_threshold,
                         color = "red",
                         linetype = "dashed") +
-    ggplot2::geom_text(ggplot2::aes(label = paste0("EPA/P: ", round(.data$EPAP,2))), fontface = "bold",size = ifelse(count_x >= 8, 50/count_x, 6),  nudge_y = ifelse(count_x >= 8, -max_y/8, -max_y/7), color = "#6c0000", na.rm = TRUE) +
-    ggplot2::geom_text(ggplot2::aes(label = paste0("SR: ", round(.data$SR,2))), fontface = "bold",size = ifelse(count_x >= 8, 50/count_x, 6),  nudge_y = ifelse(count_x >= 8, -max_y/12, -max_y/11), color = "#6c0000", na.rm = TRUE) +
+    ggplot2::geom_text(ggplot2::aes(label = paste0("Spread: ", round(.data$spread,2))), fontface = "bold",size = ifelse(count_x >= 8, 50/count_x, 6),  nudge_y = ifelse(count_x >= 8, -max_y/13, -max_y/13), color = "#6c0000", na.rm = TRUE) +
+    ggplot2::geom_text(ggplot2::aes(label = paste0("O/U: ", round(.data$over_under,2))), fontface = "bold",size = ifelse(count_x >= 8, 50/count_x, 6),  nudge_y = ifelse(count_x >= 8, -max_y/9.5, -max_y/8.5), color = "#6c0000", na.rm = TRUE) +
+    ggplot2::geom_text(ggplot2::aes(label = paste0("SR: ", paste0(round(.data$SR*100,0),"%"))), fontface = "bold",size = ifelse(count_x >= 8, 50/count_x, 6),  nudge_y = ifelse(count_x >= 8, -max_y/7.5, -max_y/6.45), color = "#6c0000", na.rm = TRUE) +
+    ggplot2::geom_text(ggplot2::aes(label = paste0("EPA/P: ", round(.data$EPAP,2))), fontface = "bold",size = ifelse(count_x >= 8, 50/count_x, 6),  nudge_y = ifelse(count_x >= 8, -max_y/6.2, -max_y/5.2), color = "#6c0000", na.rm = TRUE) +
 
     cfbplotR::geom_cfb_logos(ggplot2::aes(team = .data$opponent),
                              width = .05,
